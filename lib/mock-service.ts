@@ -1,3 +1,29 @@
+import type {
+  User,
+  EmotionDiary,
+  DiagnosisResult,
+  CounselingCenter,
+  InformationContent,
+  AdminStatistics,
+} from "@/types"
+
+// 모의 사용자 데이터
+const users: User[] = [
+  {
+    id: "user1",
+    name: "김철수",
+    email: "user@example.com",
+    createdAt: "2023-01-15T09:00:00Z",
+    role: "user",
+  },
+  {
+    id: "admin1",
+    name: "관리자",
+    email: "admin@example.com",
+    createdAt: "2023-01-01T00:00:00Z",
+    role: "admin",
+  },
+]
 // 상담센터 목데이터 추가
 export const mockCounselingCenters = [
   {

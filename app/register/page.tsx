@@ -10,13 +10,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { signupUser } from "@/lib/api/auth"
 
 export default function RegisterPage() {
   const router = useRouter()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  const [passwordConfirm, setPasswordConfirm] = useState("")
   const [agreeTerms, setAgreeTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -25,7 +26,7 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     // 비밀번호 확인
-    if (password !== confirmPassword) {
+    if (password !== passwordConfirm) {
       alert("비밀번호가 일치하지 않습니다.")
       setIsLoading(false)
       return
@@ -38,8 +39,8 @@ export default function RegisterPage() {
       return
     }
 
-    // 실제 구현에서는 여기에 회원가입 API 호출 로직이 들어갑니다
-    console.log("회원가입 시도:", { name, email, password })
+    await signupUser({ name, email, password, passwordConfirm })
+    console.log("회원가입 시도:", { name, email, password,passwordConfirm })
 
     // 목업: 회원가입 성공 시뮬레이션
     setTimeout(() => {
@@ -92,12 +93,12 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">비밀번호 확인</Label>
+              <Label htmlFor="passwordConfirm">비밀번호 확인</Label>
               <Input
-                id="confirmPassword"
+                id="passwordConfirm"
                 type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
                 required
               />
             </div>
@@ -146,7 +147,7 @@ export default function RegisterPage() {
                 ></path>
               </g>
             </svg>
-            구글로 회원가입
+            구글 회원가입
           </Button>
         </CardContent>
         <CardFooter className="flex flex-col">

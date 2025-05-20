@@ -98,7 +98,7 @@ export default function LoginPage() {
                 ></path>
               </g>
             </svg>
-            구글로 로그인
+            구글 로그인
           </Button>
         </CardContent>
         <CardFooter className="flex flex-col">

@@ -12,8 +12,10 @@ import DiaryCard from "@/components/emotion-diary/diary-card"
 import ResultCard from "@/components/diagnosis/result-card"
 import { diaryService, diagnosisService, userService } from "@/lib/mock-service"
 import type { User, EmotionDiary, DiagnosisResult } from "@/types"
+import { useRouter } from "next/navigation"
 
 export default function MyPage() {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null)
   const [diaries, setDiaries] = useState<EmotionDiary[]>([])
   const [allResults, setAllResults] = useState<DiagnosisResult[]>([])
@@ -60,6 +62,11 @@ export default function MyPage() {
     setDiaries(diaries.filter((diary) => diary.id !== id))
   }
 
+ // 회원정보 수정 페이지로 이동
+const handleEditProfile = () => {
+  router.push("/mypage/edit");
+};
+
   if (isLoading) {
     return (
       <div className="container py-8">
@@ -70,6 +77,7 @@ export default function MyPage() {
       </div>
     )
   }
+
 
   if (!user) {
     return (
@@ -107,9 +115,12 @@ export default function MyPage() {
                 <p className="text-sm text-[#8692A6]">가입일</p>
                 <p className="font-medium">{formattedJoinDate}</p>
               </div>
-              <div className="pt-4 flex justify-end">
-                <Button asChild className="bg-[#2C73EB] hover:bg-[#2361c7]">
-                  <Link href="/emotion-diary">일기 작성하기</Link>
+             <div className="pt-4 flex justify-end gap-4">
+                <Button variant="outline" onClick={handleEditProfile}>
+                  회원정보 수정
+                </Button>
+                <Button className="bg-[#2C73EB] hover:bg-[#2361c7]" onClick={() => router.push("/emotion-diary")}>
+                  일기 작성하기
                 </Button>
               </div>
             </div>

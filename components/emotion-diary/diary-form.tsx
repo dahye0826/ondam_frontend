@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,6 +9,7 @@ import { toast } from "@/components/ui/use-toast"
 import EmotionSelector from "./emotion-selector"
 import type { Emotion, EmotionDiary } from "@/types"
 import { diaryService } from "@/lib/mock-service"
+import { Mic, CircleStop } from "lucide-react"
 
 interface DiaryFormProps {
   diary?: EmotionDiary
@@ -26,6 +26,59 @@ export default function DiaryForm({ diary, userId, onSuccess }: DiaryFormProps) 
 
   const isEditing = !!diary
 
+  // 녹음 상태 관리
+  const [isRecording, setIsRecording] = useState(false)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const chunks = useRef<Blob[]>([])
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      mediaRecorder.start()
+      setIsRecording(true)
+
+      mediaRecorder.ondataavailable = (e) => {
+        chunks.current.push(e.data)
+      }
+
+      mediaRecorder.onstop = async () => {
+        const blob = new Blob(chunks.current, { type: "audio/webm" })
+
+        // 👉 Whisper 서버 연동할 경우 아래 주석 해제
+        /*
+        const formData = new FormData()
+        formData.append("audio", blob)
+
+        const res = await fetch("http://localhost:8000/transcribe", {
+          method: "POST",
+          body: formData,
+        })
+        const data = await res.json()
+        setContent((prev) => prev + "\n" + data.transcription)
+        */
+
+        //  여기서는 재생만 (임시)
+        const audioURL = URL.createObjectURL(blob)
+        new Audio(audioURL).play()
+
+        chunks.current = []
+      }
+    } catch (err) {
+      toast({
+        title: "마이크 접근 오류",
+        description: "브라우저 마이크 권한을 허용해주세요.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop()
+    setIsRecording(false)
+  }
+
   const handleEmotionSelect = (emotion: Emotion) => {
     setSelectedEmotion(emotion)
     setErrors((prev) => ({ ...prev, emotion: undefined }))
@@ -41,7 +94,6 @@ export default function DiaryForm({ diary, userId, onSuccess }: DiaryFormProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // 유효성 검사 - 오류 메시지를 내부적으로 관리
     let hasError = false
     const newErrors = { ...errors }
 
@@ -65,14 +117,10 @@ export default function DiaryForm({ diary, userId, onSuccess }: DiaryFormProps) 
     try {
       if (isEditing && diary) {
         await diaryService.updateDiary(diary.id, selectedEmotion, content)
-        toast({
-          title: "일기가 수정되었습니다",
-        })
+        toast({ title: "일기가 수정되었습니다" })
       } else {
         await diaryService.createDiary(userId, selectedEmotion, content)
-        toast({
-          title: "일기가 저장되었습니다",
-        })
+        toast({ title: "일기가 저장되었습니다" })
       }
 
       if (onSuccess) {
@@ -100,9 +148,21 @@ export default function DiaryForm({ diary, userId, onSuccess }: DiaryFormProps) 
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="content" className="text-lg font-medium text-[#2C73EB]">
-          오늘의 일기
-        </label>
+        <div className="flex items-center justify-between">
+          <label htmlFor="content" className="text-lg font-medium text-[#2C73EB]">
+            오늘의 일기
+          </label>
+          <button
+            type="button"
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`flex items-center gap-1 text-sm px-3 py-1 border rounded
+              ${isRecording ? "text-red-500 border-red-500 hover:bg-red-50" : "text-[#2C73EB] border-[#2C73EB] hover:bg-[#e6edff]"}`}
+          >
+            {isRecording ? <CircleStop className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            {isRecording ? "정지" : "녹음"}
+          </button>
+        </div>
+
         <Textarea
           id="content"
           value={content}
