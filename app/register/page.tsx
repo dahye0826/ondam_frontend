@@ -3,7 +3,6 @@
 import type React from "react"
 
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,15 +38,17 @@ export default function RegisterPage() {
       return
     }
 
-    await signupUser({ name, email, password, passwordConfirm })
-    console.log("회원가입 시도:", { name, email, password,passwordConfirm })
-
-    // 목업: 회원가입 성공 시뮬레이션
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      await signupUser({ name, email, password, passwordConfirm }) // ✅ API 호출
+      alert("회원가입 성공! 로그인 페이지로 이동합니다.")
       router.push("/login")
-    }, 1000)
+    } catch (error: any) {
+      alert(error?.response?.data?.message || "회원가입에 실패했습니다.")
+    } finally {
+      setIsLoading(false)
+    }
   }
+
 
   return (
     <div className="container max-w-md py-12 mx-auto">
@@ -109,9 +110,13 @@ export default function RegisterPage() {
                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-[#8692A6]"
               >
                 <span>
-                  <Link href="/terms" className="text-[#2C73EB] hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => router.push("/terms")}
+                    className="text-[#2C73EB] hover:underline"
+                  >
                     이용약관
-                  </Link>
+                  </button>
                   에 동의합니다
                 </span>
               </label>
@@ -153,9 +158,13 @@ export default function RegisterPage() {
         <CardFooter className="flex flex-col">
           <div className="text-center text-sm text-[#8692A6] mt-2">
             이미 계정이 있으신가요?{" "}
-            <Link href="/login" className="text-[#2C73EB] hover:underline">
+            <button
+              type="button"
+              onClick={() => router.push("/login")}
+              className="text-[#2C73EB] hover:underline"
+            >
               로그인
-            </Link>
+            </button>
           </div>
         </CardFooter>
       </Card>
